@@ -11,29 +11,8 @@ service:
 # Istio Configuration
 istio:
   enabled: true
-  # Path prefix for this service (e.g., /media-service)
-  pathPrefix: "media-service"
-  gateway:
-    create: false # Use existing public-gateway
-    name: "public-gateway"
-    selector: "ingressgateway"
-    port: 80
-    host: "*"
-  virtualService:
-    create: true
-    hosts:
-      - "*" # or your specific domain
-    http:
-      - match:
-          - uri:
-              prefix: /media-service
-        rewrite:
-          uri: ""
-        route:
-          - destination:
-              host: "media-service"
-              port:
-                number: 8086
+  # For internal identification
+  pathPrefix: "media"
 env:
   # TeraBox
   TERABOX_NDUS: "Yb8V8X8peHuidcY8XOx11JOaTl5cf_3je8CsYLoo"
