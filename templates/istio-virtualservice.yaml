@@ -1,0 +1,25 @@
+{{- if .Values.istio.enabled -}}
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "media-service.fullname" . }}-vs
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "media-service.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - {{ .Values.istio.gateway.name | default "public-gateway" }}
+  http:
+    - match:
+        - uri:
+            prefix: /{{ .Values.istio.pathPrefix | default .Chart.Name }}
+      rewrite:
+        uri: "/"
+      route:
+        - destination:
+            host: {{ include "media-service.fullname" . }}
+            port:
+              number: {{ .Values.service.port }}
+  {{- end }}

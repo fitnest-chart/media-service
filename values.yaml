@@ -1,0 +1,68 @@
+replicaCount: 1
+image:
+  repository: ghcr.io/fitnest-backend/media-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: ghcr-secret
+service:
+  type: ClusterIP
+  port: 8086
+# Istio Configuration
+istio:
+  enabled: true
+  # Path prefix for this service (e.g., /media-service)
+  pathPrefix: "media-service"
+  gateway:
+    create: false # Use existing public-gateway
+    name: "public-gateway"
+    selector: "ingressgateway"
+    port: 80
+    host: "*"
+  virtualService:
+    create: true
+    hosts:
+      - "*" # or your specific domain
+    http:
+      - match:
+          - uri:
+              prefix: /media-service
+        rewrite:
+          uri: ""
+        route:
+          - destination:
+              host: "media-service"
+              port:
+                number: 8086
+env:
+  # TeraBox
+  TERABOX_NDUS: "Yb8V8X8peHuidcY8XOx11JOaTl5cf_3je8CsYLoo"
+  TERABOX_APP_ID: "250528"
+  TERABOX_UPLOAD_ID: "N1-ODUuMTMyLjI3LjIyNjoxNzY5NDk1MDcwOjg2ODczODc4Mzc4Mzk3NDYzMDA="
+  TERABOX_JS_TOKEN: "BB04F91D937F292A33FB2D21F7B47DA99394307EED9123765BEB5FF013E77D902A16F39D17C9CDF3F033AE98437AC2E45F2E8599F7544D15D1E90878AC8198C4"
+  TERABOX_BROWSER_ID: "GFfVsMdx91iLbvq0-wAW4AVIoXEM4rrP5VFCpqDWXnXd75NYzR7E5Spb3-c="
+  TERABOX_WORKER_BASE_URL: "http://terabox-worker:4000"
+  # Eureka
+  EUREKA_ENABLED: "false"
+  EUREKA_URL: "http://eureka:8761/eureka/"
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 15
+  periodSeconds: 5
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi

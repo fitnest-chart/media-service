@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "media-service.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "media-service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "media-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "media-service.labels" . | nindent 8 }}
+      annotations:
+        {{- if .Values.istio.enabled }}
+        sidecar.istio.io/inject: "true"
+        {{- end }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              name: http
+          env:
+          {{- if .Values.istio.enabled }}
+          - name: SPRINGDOC_SWAGGER_UI_CONFIG_URL
+            value: "/{{ .Values.istio.pathPrefix | default .Chart.Name }}/v3/api-docs/swagger-config"
+          - name: SPRINGDOC_SWAGGER_UI_URL
+            value: "/{{ .Values.istio.pathPrefix | default .Chart.Name }}/v3/api-docs"
+          - name: SPRINGDOC_SERVER_URL
+            value: "/{{ .Values.istio.pathPrefix | default .Chart.Name }}"
+          {{- end }}
+          {{- range $key, $value := .Values.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
