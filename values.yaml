@@ -24,6 +24,9 @@ env:
   # Eureka
   EUREKA_ENABLED: "false"
   EUREKA_URL: "http://eureka:8761/eureka/"
+  REDIS_HOST: "redis.fitnest-dev.svc.cluster.local"
+  REDIS_PORT: "6379"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-service.fitnest-dev.svc.cluster.local:9092"
 livenessProbe:
   httpGet:
     path: /health
